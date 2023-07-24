@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Republica Coffee Rosters - Subscribe Here!</title>
+  <style>
+    /* ... CSS styles ... */
+    body {
+      background-image: url('./coffee.jpg');
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center;
+      border: 10px solid black;
+      font-family: "Copperplate Gothic Bold", sans-serif;
+      text-align: center;
+    }
+
+    .container {
+      max-width: 450px;
+      margin: 0 auto;
+      padding: 40px;
+      background-color: white;
+      opacity: 0.9;
+      position: relative;
+      text-align: center;
+      height: 420px
+    }
+
+    .form-group {
+      margin-bottom:0%
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .form-group input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    .form-group button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #000000;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .message {
+      text-align: center;
+      font-weight: bold;
+      margin-top: 40px;
+    }
+
+    .visit-button {
+      position: absolute;
+      bottom: 0%;
+      transform: translateX(-50%);
+      margin-bottom: -30px;
+      width: 80%;
+      padding: 12px 30px;
+      font-size: 16px;
+      background-color: #000000;
+      color: white;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .bottom-pictures {
+      position:absolute;
+      bottom: 35px;
+           width: 17%;
+      right: 41%;
+      display: flex;
+      justify-content: space-between;
+      text-align: center;
+    }
+
+    .bottom-pictures img {
+      width: 20px;
+      height: 0px;
+      
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-image"></div>
+  <div class="container">
+    <h1>Join the Republica Family Subscribe Here!</h1>
+    <form action="https://formspree.io/f/mrgwbrqa" method="POST">
+      <!-- Add this hidden field with your Formspree email address as the value -->
+      <input type="hidden" name="_to" value="erwinrpr12@gmail.com">
+    <!-- action="/subscribe" method="post" id="subscribeForm"-->
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
+      </div>
+      <div class="form-group">
+        <button type="submit">Subscribe</button>
+      </div>
+    </form>
+    <div class="message" id="thanksMessage" style="display: none;">Thanks for subscribing! Use code "REP15" at checkout</div>
+    <div class="message" id="errorMessage" style="display: none; color: red;"></div>
+    <img src="Logo.png" alt="Additional Picture" class="bottom-pictures hidden">
+    <a href="https://www.republicaroasters.com" target="_blank" class="visit-button">Visit Our Website WWW.REPUBLICAROASTERS.COM</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('subscribeForm');
+    const thanksMessage = document.getElementById('thanksMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const additionalPicture = document.querySelector('.bottom-pictures');
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent form submission
+
+      // Get the email input value
+      const emailInput = document.getElementById('email');
+      const email = emailInput.value.trim();
+
+      // Check for valid syntax using a regular expression
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        showError("Invalid email address format");
+        return;
+      }
+
+      // Check for role-based email accounts (optional, you can customize this list)
+      const roleAccountDomains = ["info", "admin", "support", "noreply"];
+      const domain = email.split("@")[1];
+      if (roleAccountDomains.includes(domain.toLowerCase())) {
+        showError("Please provide a personal email address");
+        return;
+      }
+
+      // Display the message
+      thanksMessage.style.display = 'block';
+
+      // Show the additional picture
+      additionalPicture.classList.remove('hidden');
+
+      // Clear the input field
+      emailInput.value = '';
+    });
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      setTimeout(function() {
+        errorMessage.style.display = 'none';
+      }, 5000); // Hide the error message after 5 seconds
+    }
+  </script>
+
+  <script>
+   
+
+    // Install required packages: npm install express email-verifier
+
+    const express = require('express');
+    const EmailVerifier = require('email-verifier');
+
+    const app = express();
+    const port = 3000;
+
+    // Create an instance of the EmailVerifier
+    const emailVerifier = new EmailVerifier({
+      key: '99d8b41159b94178de0535a8e43bdcce', // Replace with your email verification API key
+    });
+
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.static('public'));
+
+    app.post('/subscribe', async (req, res) => {
+      const { email } = req.body;
+
+      // Check for valid syntax using a regular expression (same as client-side)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address format' });
+      }
+
+      // Perform domain verification and SMTP check using email-verifier
+      try {
+        const result = await emailVerifier.verify(email);
+        if (!result.success) {
+          return res.status(400).json({ error: 'Invalid email address' });
+        }
+
+        // At this point, the email is valid, and you can save it to your database or perform any other necessary actions
+
+        return res.status(200).json({ message: 'Thanks for subscribing!' });
+      } catch (error) {
+        console.error('Error verifying email:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  </script>
+</body>
+</html>
